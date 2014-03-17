@@ -1,7 +1,3 @@
-/* DON'T FORGET:
-tasks are async
-any edits to includes in ./src may be lost */
-
 // Define paths and other variables
 var src = 'src/';
 var dest = 'build/';
@@ -13,7 +9,8 @@ var pathsIn = {
     sass: src + 'scss/**/*.scss',
 
     sassIncludes: ['bower_components/foundation/scss/'],
-    jsIncludes: 'bower_components/foundation/js/**/*.js' // foundation/js/vendor includes jquery, modernizr, fastclick...
+    jsIncludes: 'bower_components/foundation/js/**/*.js', // foundation/js/vendor includes jquery, modernizr, fastclick...
+    jsModernizr: 'bower_components/foundation/js/vendor/modernizr.js'
 };
 
 // Paths we write to
@@ -25,11 +22,13 @@ var pathsOut = {
 
 var gulp = require('gulp');
 var $ = require('gulp-load-plugins')({ camelize: true } ); // Load everything in package.json that matches "gulp-*"
+var jsFilter = $.filter('!' + pathsIn.jsModernizr); // Don't concat modernizr
 
 
 // Lint JS with jshint
 gulp.task('lint', function() {
     gulp.src(pathsIn.js)
+        .pipe($.cached('jsin-cache'))
         .pipe($.jshint())
         .pipe($.jshint.reporter('default'));
 });
@@ -39,6 +38,7 @@ gulp.task('lint', function() {
 gulp.task('sass', function() {
     gulp.src(pathsIn.sass)
         .pipe($.sass({ includePaths: pathsIn.sassIncludes }))
+        .pipe($.cached('sass-cache'))
         .pipe(gulp.dest(pathsOut.css))
         .pipe($.rename({ suffix: '.min' }))
         .pipe($.csso()) // Minify and optimize with csso
@@ -49,11 +49,18 @@ gulp.task('sass', function() {
 // Concatenate & minify JS
 gulp.task('js', function() {
     gulp.src([pathsIn.js, pathsIn.jsIncludes])
+        .pipe(jsFilter)
         .pipe($.concat('app.js'))
+        .pipe($.cached('jsout-cache'))
         .pipe(gulp.dest(pathsOut.js))
         .pipe($.rename({ suffix: '.min' }))
         .pipe($.uglify()) // Minify with uglify.js
         .pipe(gulp.dest(pathsOut.js));
+    // Modernizr is separate because we don't lazy load it
+    gulp.src(pathsIn.jsModernizr)
+        .pipe($.cached('modernizr-cache'))
+        .pipe(gulp.dest(pathsOut.js));
+
 });
 
 

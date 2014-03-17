@@ -13,8 +13,9 @@ You'll need to have the following items installed before continuing.
 ## Quickstart
 
 ```bash
-git clone git@github.com:cubistcastle/foundation-libsass-template.git
-npm install && bower install
+git clone git@github.com:covertg/libsass-template.git
+npm install
+bower install
 ```
 
 While you're working on your project, run:
@@ -25,5 +26,5 @@ And you're set!
 
 ## Directory Strucutre
 
-  * `scss/_settings.scss`: Foundation configuration settings go in here
-  * `scss/app.scss`: Application styles go here
+  * `src/`: All application sources go here
+  * `bower_components/foundation/scss/foundation/_settings.scss`: Foundation configuration settings go in here
