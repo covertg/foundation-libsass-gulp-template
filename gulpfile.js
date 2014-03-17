@@ -4,6 +4,7 @@ var dest = 'build/';
 
 // Paths we read from
 var pathsIn = {
+    html: src + '**/*.{html,txt}',
     img: src + 'img/',
     js: src + 'js/**/*.js',
     sass: src + 'scss/**/*.scss',
@@ -15,6 +16,7 @@ var pathsIn = {
 
 // Paths we write to
 var pathsOut = {
+    html: dest,
     img: dest + 'img/',
     js: dest + 'js/',
     css: dest + 'css/',
@@ -24,6 +26,13 @@ var gulp = require('gulp');
 var $ = require('gulp-load-plugins')({ camelize: true } ); // Load everything in package.json that matches "gulp-*"
 var jsFilter = $.filter('!' + pathsIn.jsModernizr); // Don't concat modernizr
 
+// Copy html/etc and do includes
+gulp.task('html', function() {
+    gulp.src(pathsIn.html) // Source all .html and .txt
+        .pipe($.cached('html-cache'))
+        .pipe($.include()) // Run through gulp-include
+        .pipe(gulp.dest(pathsOut.html));
+});
 
 // Lint JS with jshint
 gulp.task('lint', function() {
@@ -65,4 +74,4 @@ gulp.task('js', function() {
 
 
 // Default Task
-gulp.task('default', ['lint', 'sass', 'js']);
+gulp.task('default', ['lint', 'js', 'sass', 'html']);

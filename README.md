@@ -28,3 +28,7 @@ And you're set!
 
   * `src/`: All application sources go here
   * `bower_components/foundation/scss/foundation/_settings.scss`: Foundation configuration settings go in here
+
+## Notes
+
+Replace the ">=" operator with "^" in the case of future API updates or other package breakages
