@@ -1,61 +1,61 @@
-// Include gulp
+/* DON'T FORGET:
+tasks are async
+any edits to includes in ./src may be lost */
+
+// Define paths and other variables
+var src = 'src/';
+var dest = 'build/';
+
+// Paths we read from
+var pathsIn = {
+    img: src + 'img/',
+    js: src + 'js/**/*.js',
+    sass: src + 'scss/**/*.scss',
+
+    sassIncludes: ['bower_components/foundation/scss/'],
+    jsIncludes: 'bower_components/foundation/js/**/*.js' // foundation/js/vendor includes jquery, modernizr, fastclick...
+};
+
+// Paths we write to
+var pathsOut = {
+    img: dest + 'img/',
+    js: dest + 'js/',
+    css: dest + 'css/',
+};
+
 var gulp = require('gulp');
-
-// Include Our Plugins
-// Load plugins
-var $ = require('gulp-load-plugins')({camelize: true});
+var $ = require('gulp-load-plugins')({ camelize: true } ); // Load everything in package.json that matches "gulp-*"
 
 
+// Lint JS with jshint
 gulp.task('lint', function() {
-    gulp.src('./js/*.js')
+    gulp.src(pathsIn.js)
         .pipe($.jshint())
         .pipe($.jshint.reporter('default'));
 });
 
 
+// Compile & minify sass
 gulp.task('sass', function() {
-    gulp.src('./scss/*.scss')
-        .pipe($.sass({includePaths: ['bower_components/foundation/scss']}))
-        .pipe(gulp.dest('./css'))
-        .pipe($.connect.reload());
+    gulp.src(pathsIn.sass)
+        .pipe($.sass({ includePaths: pathsIn.sassIncludes }))
+        .pipe(gulp.dest(pathsOut.css))
+        .pipe($.rename({ suffix: '.min' }))
+        .pipe($.csso()) // Minify and optimize with csso
+        .pipe(gulp.dest(pathsOut.css));
 });
 
 
-// Concatenate & Minify JS
-gulp.task('scripts', function() {
-    gulp.src('./js/*.js')
-        .pipe($.concat('all.js'))
-        // .pipe(gulp.dest('./dist'))
-        // .pipe($.rename('all.min.js'))
-        // .pipe($.uglify())
-        // .pipe(gulp.dest('./dist'))
-        .pipe($.connect.reload());
+// Concatenate & minify JS
+gulp.task('js', function() {
+    gulp.src([pathsIn.js, pathsIn.jsIncludes])
+        .pipe($.concat('app.js'))
+        .pipe(gulp.dest(pathsOut.js))
+        .pipe($.rename({ suffix: '.min' }))
+        .pipe($.uglify()) // Minify with uglify.js
+        .pipe(gulp.dest(pathsOut.js));
 });
 
-
-// Connect Server
-gulp.task('connect', $.connect.server({
-    root: __dirname,
-    port: 9000,
-    livereload: true
-}));
-
-// Watch
-gulp.task('watch', ['connect', 'lint', 'sass', 'scripts'], function () {
-    // Watch for changes in `app` folder
-    gulp.watch([
-        './*.html',
-        './scss/**/*.scss',
-        './js/**/*.js'
-    ], $.connect.reload);
-
-    // Watch .scss files
-    gulp.watch('./scss/*.scss', ['sass']);
-
-    // Watch .js files
-    gulp.watch('./js/*.js', ['lint', 'scripts']);
-
-});
 
 // Default Task
-gulp.task('default', ['lint', 'sass', 'scripts']);
+gulp.task('default', ['lint', 'sass', 'js']);
