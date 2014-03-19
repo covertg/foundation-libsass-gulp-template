@@ -13,22 +13,33 @@ You'll need to have the following items installed before continuing.
 ## Quickstart
 
 ```bash
-git clone git@github.com:covertg/libsass-template.git
+git clone https://github.com/covertg/libsass-template.git
 npm install
 bower install
 ```
 
 While you're working on your project, run:
 
-`gulp`
+```bash
+gulp
+```
 
-And you're set!
+And you're set! Gulp will run and watch for changes.
 
-## Directory Strucutre
+To build once for production, run:
+
+```bash
+gulp --type dist
+```
+
+And gulp will rebuild and optimize/minify your files.
+
+## Directory Structure
 
   * `src/`: All application sources go here
+  * `build/`: All built files go here
   * `bower_components/foundation/scss/foundation/_settings.scss`: Foundation configuration settings go in here
 
 ## Notes
 
-Replace the ">=" operator with "^" in the case of future API updates or other package breakages
+  * Replace the ">=" operators with "^" in package.json in the case of future API updates or other package breakages.

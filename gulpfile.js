@@ -4,17 +4,23 @@ var dest = 'build/';
 
 // Paths we read from
 var pathsIn = {
-    html: src + '**/*.{html,txt}',
+    html: src,
+
     img: src + 'img/',
-    js: src + 'js/**/*.js',
-    sass: src + 'scss/**/*.scss',
 
-    sassIncludes: ['bower_components/foundation/scss/'],
-    jsIncludes: 'bower_components/foundation/js/**/*.js', // foundation/js/vendor includes jquery, modernizr, fastclick...
-    jsModernizr: 'bower_components/foundation/js/vendor/modernizr.js'
+    js: src + 'js/',
+    jsFoundation: ['bower_components/foundation/js'], // vendor/ contains updated jquery, fastclick, etc...
+
+    sass: src + 'scss/',
+    sassIncludes: ['bower_components/foundation/scss/']
+
 };
+pathsIn.jsModernizr = [pathsIn. jsFoundation + 'vendor/modernizr.js'];
+pathsIn.jsIncludes = [pathsIn.jsFoundation + '**/*.js', '!' + pathsIn.jsModernizr];
+pathsIn.jsAll =  pathsIn.jsIncludes.concat(pathsIn.js);
+pathsIn.sassAll = pathsIn.sassIncludes.concat(pathsIn.sass);
 
-// Paths we write to
+// Paths we write to (^ could that be cleaner? ^)
 var pathsOut = {
     html: dest,
     img: dest + 'img/',
@@ -23,53 +29,56 @@ var pathsOut = {
 };
 
 var gulp = require('gulp');
+var util = require('gulp-util');
+var stylish = require('jshint-stylish'); // Nice-looking console output when linting
 var $ = require('gulp-load-plugins')({ camelize: true } ); // Load everything in package.json that matches "gulp-*"
-var jsFilter = $.filter('!' + pathsIn.jsModernizr); // Don't concat modernizr
+
+
+var production = util.env.type === 'dist'; // Set production mode
+
 
 // Copy html/etc and do includes
 gulp.task('html', function() {
-    gulp.src(pathsIn.html) // Source all .html and .txt
-        .pipe($.cached('html-cache'))
+    gulp.src(pathsIn.html + '**/*.{html,txt}')
         .pipe($.include()) // Run through gulp-include
         .pipe(gulp.dest(pathsOut.html));
-});
-
-// Lint JS with jshint
-gulp.task('lint', function() {
-    gulp.src(pathsIn.js)
-        .pipe($.cached('jsin-cache'))
-        .pipe($.jshint())
-        .pipe($.jshint.reporter('default'));
 });
 
 
 // Compile & minify sass
 gulp.task('sass', function() {
-    gulp.src(pathsIn.sass)
-        .pipe($.sass({ includePaths: pathsIn.sassIncludes }))
-        .pipe($.cached('sass-cache'))
-        .pipe(gulp.dest(pathsOut.css))
-        .pipe($.rename({ suffix: '.min' }))
-        .pipe($.csso()) // Minify and optimize with csso
+    gulp.src(pathsIn.sass + '**/*.scss')
+        .pipe($.sass({
+            includePaths: pathsIn.sassAll,
+            outputStyle: 'nested'
+        }))
+        .pipe(production ? $.csso() : util.noop()) // Minify and optimize with csso
         .pipe(gulp.dest(pathsOut.css));
 });
 
 
 // Concatenate & minify JS
 gulp.task('js', function() {
-    gulp.src([pathsIn.js, pathsIn.jsIncludes])
-        .pipe(jsFilter)
+    gulp.src(pathsIn.jsAll)
         .pipe($.concat('app.js'))
-        .pipe($.cached('jsout-cache'))
-        .pipe(gulp.dest(pathsOut.js))
-        .pipe($.rename({ suffix: '.min' }))
-        .pipe($.uglify()) // Minify with uglify.js
-        .pipe(gulp.dest(pathsOut.js));
-    // Modernizr is separate because we don't lazy load it
-    gulp.src(pathsIn.jsModernizr)
-        .pipe($.cached('modernizr-cache'))
+        .pipe(production ? $.uglify() : util.noop()) // Minify with uglifyjs2
         .pipe(gulp.dest(pathsOut.js));
 
+    gulp.src(pathsIn.jsModernizr) // Modernizr is separate because load it at the top
+        .pipe(gulp.dest(pathsOut.js));
+});
+
+
+// Lint JS with jshint
+gulp.task('lint', function() {
+    gulp.src([pathsIn.js + '**/*.js', 'Gulpfile.js'])
+        .pipe($.jshint({
+            'camelcase': true,
+            'unused': true,
+            'nonbsp': true,
+            'noempty': true
+        }))
+        .pipe($.jshint.reporter(stylish));
 });
 
 

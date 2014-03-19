@@ -3,16 +3,15 @@
   "version": "0.0.1",
   "devDependencies": {
     "gulp": ">=3.5.6",
-    "gulp-cached": ">=0.0.3",
     "gulp-concat": ">=2.1.7",
     "gulp-csso": ">=0.2.6",
-    "gulp-filter": ">=0.3.1",
     "gulp-include": ">=0.2.2",
     "gulp-jshint": ">=1.5.0",
     "gulp-load-plugins": ">=0.4.0",
     "gulp-rename": ">=1.2.0",
     "gulp-sass": ">=0.7.1",
     "gulp-uglify": ">=0.2.1",
-    "gulp-util": ">=2.2.14"
+    "gulp-util": ">=2.2.14",
+    "jshint-stylish": ">=0.1.5"
   }
 }
