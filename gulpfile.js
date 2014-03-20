@@ -26,7 +26,8 @@ var pathsOut = {
 var gulp = require('gulp');
 var util = require('gulp-util');
 var stylish = require('jshint-stylish'); // Nice-looking console output when linting
-var π = require('gulp-load-plugins')({ camelize: true } ); // All the good names were taken (load everything that matches 'gulp-*' from package.json)
+var browserSync = require('browser-sync');
+var π = require('gulp-load-plugins')({ camelize: true } ); // Load everything that matches 'gulp-*' from package.json (all the good names were taken)
 
 var production = util.env.type === 'dist'; // Set production mode
 
@@ -34,6 +35,7 @@ var production = util.env.type === 'dist'; // Set production mode
 // Copy html/etc
 gulp.task('html', function() {
     gulp.src(pathsIn.html)
+        .pipe(π.cached('html-cache')) // Only returns changed files. We can't do this with js concat or sass because they map lots of files into one
         .pipe(gulp.dest(pathsOut.html));
 });
 
@@ -45,7 +47,7 @@ gulp.task('sass', function() {
             includePaths: [pathsIn.sassFoundation],
             outputStyle: 'nested'
         }))
-        .pipe(production ? π.autoprefixer().pipe(π.csso()) : util.noop()) // Minify, optimize and prefix if production
+        .pipe(production ? π.autoprefixer('last 2 versions').pipe(π.csso()) : util.noop()) // Minify, optimize and prefix if production
         .pipe(gulp.dest(pathsOut.css));
 });
 
@@ -58,6 +60,7 @@ gulp.task('js', function() {
         .pipe(gulp.dest(pathsOut.js));
 
     gulp.src([pathsIn.jsModernizr, pathsIn.jsJquery]) // Copy modernizr & jquery
+        .pipe(π.cached('js-cache'))
         .pipe(production ? π.uglify() : util.noop())
         .pipe(gulp.dest(pathsOut.js));
 });
@@ -66,6 +69,7 @@ gulp.task('js', function() {
 // Lint JS with jshint
 gulp.task('lint', function() {
     gulp.src([pathsIn.js, 'Gulpfile.js'])
+        .pipe(π.cached('lint-cache'))
         .pipe(π.jshint({
             'jquery': true,
             'camelcase': true
@@ -73,13 +77,24 @@ gulp.task('lint', function() {
         .pipe(π.jshint.reporter(stylish));
 });
 
+// Cross-device livereload and actions sync (i.e scrolling, clicking, ...)
+gulp.task('browser-sync', function() {
+    browserSync.init(dest + '**/*', {
+        server: {
+            baseDir: dest
+        },
+        //reloadDelay: 1000, // Set in ms if needed
+        open: false // Don't automatically open browser
+    });
+});
+
 
 // Build task
 gulp.task('build', ['lint', 'js', 'sass', 'html']);
 
 // Default (watch) task
-gulp.task('default', ['build'], function() {
-    gulp.watch([pathsIn.sass, pathsIn.sassFoundation], ['sass']);
+gulp.task('default', ['browser-sync', 'build'], function() {
+    gulp.watch([pathsIn.sass, pathsIn.sassFoundation + '**/*.scss'], ['sass']);
 
     gulp.watch([pathsIn.js, pathsIn.jsFoundation], ['lint', 'js']);
 

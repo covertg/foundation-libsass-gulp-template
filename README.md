@@ -1,12 +1,13 @@
 # Foundation libsass template
 
-This is a template to start your own project that uses:
+This is a template to start your own project using:
 
-  * Gulp
-  * Foundation + libsass
-  * Autoprefixer
-  * Minify with CSSO and UglifyJS2
-  * Lint with JSHint
+  * [Gulp](http://gulpjs.com)
+  * [Foundation](http://foundation.zurb.com) + libsass
+  * [Autoprefixer]()
+  * [CSSO](http://bem.info/tools/optimizers/csso/) and [UglifyJS2](http://lisperator.net/uglifyjs/)
+  * [JSHint](http://www.jshint.com/)
+  * [BrowserSync](http://browsersync.io/)
 
 ## Requirements
 
@@ -30,7 +31,7 @@ While you're working on your project, run:
 gulp
 ```
 
-And you're set! Gulp will run and watch for changes.
+And you're set! Gulp will run, watch your changes, and serve your files on localhost. Check the console output for more info.
 
 ## Directory Structure
 
@@ -41,14 +42,7 @@ And you're set! Gulp will run and watch for changes.
 
 ## Other Notes
 
-Replace the ">=" operators with "^" in package.json in the case of future API updates or other package breakages.
- 
-To build once for production, run:
-
-```bash
-gulp build --type dist
-```
-
-And gulp will rebuild and optimize/minify your files.
-
-Currently, we are using a PR repo for autoprefixer because it's up-to-date.
+  * Replace the ">=" operators with "^" in package.json in the case of future API updates or other package breakages.
+  * To build once for production, run: `gulp build --type dist` and gulp will rebuild and optimize/minify your files.
+  * Currently, we are using a PR repo for autoprefixer because it's up-to-date.
+  * NPM may seem to hang when installing ws (dependency of BrowserSync). Just give it some time.
