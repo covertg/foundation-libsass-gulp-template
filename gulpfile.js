@@ -1,29 +1,24 @@
-// Define paths and other variables
+// Define paths & other variables
 var src = 'src/';
 var dest = 'build/';
+var foundation = 'bower_components/foundation/';
 
 // Paths we read from
 var pathsIn = {
-    html: src,
+    html: src + '**/*.{html,txt}',
 
-    img: src + 'img/',
+    js: src + 'js/**/*.js',
+    jsFoundation: foundation + 'js/**/*.js', // js/vendor/ contains updated jquery, fastclick, modernizr, etc...
+    jsModernizr: foundation + 'js/vendor/modernizr.js',
+    jsJquery: foundation + 'js/vendor/jquery.js',
 
-    js: src + 'js/',
-    jsFoundation: ['bower_components/foundation/js'], // vendor/ contains updated jquery, fastclick, etc...
-
-    sass: src + 'scss/',
-    sassIncludes: ['bower_components/foundation/scss/']
-
+    sass: src + 'scss/**/*.scss',
+    sassFoundation: foundation + 'scss/' // Don't glob because node-sass' includePaths won't understand it
 };
-pathsIn.jsModernizr = [pathsIn. jsFoundation + 'vendor/modernizr.js'];
-pathsIn.jsIncludes = [pathsIn.jsFoundation + '**/*.js', '!' + pathsIn.jsModernizr];
-pathsIn.jsAll =  pathsIn.jsIncludes.concat(pathsIn.js);
-pathsIn.sassAll = pathsIn.sassIncludes.concat(pathsIn.sass);
 
-// Paths we write to (^ could that be cleaner? ^)
+// Paths we write to
 var pathsOut = {
     html: dest,
-    img: dest + 'img/',
     js: dest + 'js/',
     css: dest + 'css/',
 };
@@ -31,56 +26,62 @@ var pathsOut = {
 var gulp = require('gulp');
 var util = require('gulp-util');
 var stylish = require('jshint-stylish'); // Nice-looking console output when linting
-var $ = require('gulp-load-plugins')({ camelize: true } ); // Load everything in package.json that matches "gulp-*"
-
+var π = require('gulp-load-plugins')({ camelize: true } ); // All the good names were taken (load everything that matches 'gulp-*' from package.json)
 
 var production = util.env.type === 'dist'; // Set production mode
 
 
-// Copy html/etc and do includes
+// Copy html/etc
 gulp.task('html', function() {
-    gulp.src(pathsIn.html + '**/*.{html,txt}')
-        .pipe($.include()) // Run through gulp-include
+    gulp.src(pathsIn.html)
         .pipe(gulp.dest(pathsOut.html));
 });
 
 
 // Compile & minify sass
 gulp.task('sass', function() {
-    gulp.src(pathsIn.sass + '**/*.scss')
-        .pipe($.sass({
-            includePaths: pathsIn.sassAll,
+    gulp.src(pathsIn.sass)
+        .pipe(π.sass({
+            includePaths: [pathsIn.sassFoundation],
             outputStyle: 'nested'
         }))
-        .pipe(production ? $.csso() : util.noop()) // Minify and optimize with csso
+        .pipe(production ? π.autoprefixer().pipe(π.csso()) : util.noop()) // Minify, optimize and prefix if production
         .pipe(gulp.dest(pathsOut.css));
 });
 
 
 // Concatenate & minify JS
 gulp.task('js', function() {
-    gulp.src(pathsIn.jsAll)
-        .pipe($.concat('app.js'))
-        .pipe(production ? $.uglify() : util.noop()) // Minify with uglifyjs2
+    gulp.src([pathsIn.jsFoundation, pathsIn.js, '!' + pathsIn.jsModernizr, '!' + pathsIn.jsJquery]) // Modernizr and jquery load separately, Foundation loads before app.js
+        .pipe(π.concat('app.js'))
+        .pipe(production ? π.uglify() : util.noop()) // Minify with uglifyjs2
         .pipe(gulp.dest(pathsOut.js));
 
-    gulp.src(pathsIn.jsModernizr) // Modernizr is separate because load it at the top
+    gulp.src([pathsIn.jsModernizr, pathsIn.jsJquery]) // Copy modernizr & jquery
+        .pipe(production ? π.uglify() : util.noop())
         .pipe(gulp.dest(pathsOut.js));
 });
 
 
 // Lint JS with jshint
 gulp.task('lint', function() {
-    gulp.src([pathsIn.js + '**/*.js', 'Gulpfile.js'])
-        .pipe($.jshint({
-            'camelcase': true,
-            'unused': true,
-            'nonbsp': true,
-            'noempty': true
+    gulp.src([pathsIn.js, 'Gulpfile.js'])
+        .pipe(π.jshint({
+            'jquery': true,
+            'camelcase': true
         }))
-        .pipe($.jshint.reporter(stylish));
+        .pipe(π.jshint.reporter(stylish));
 });
 
 
-// Default Task
-gulp.task('default', ['lint', 'js', 'sass', 'html']);
+// Build task
+gulp.task('build', ['lint', 'js', 'sass', 'html']);
+
+// Default (watch) task
+gulp.task('default', ['build'], function() {
+    gulp.watch([pathsIn.sass, pathsIn.sassFoundation], ['sass']);
+
+    gulp.watch([pathsIn.js, pathsIn.jsFoundation], ['lint', 'js']);
+
+    gulp.watch([pathsIn.html], ['html']);
+});
