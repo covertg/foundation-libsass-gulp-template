@@ -1,6 +1,10 @@
 {
-  "name": "libsass-template",
+  "name": "foundation-template",
   "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/covertg/foundation-template.git"
+  },
   "devDependencies": {
     "browser-sync": ">=0.7.2",
     "gulp": ">=3.5.6",
