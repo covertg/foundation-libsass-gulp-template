@@ -84,7 +84,7 @@ gulp.task('browser-sync', function() {
             baseDir: dest
         },
         //reloadDelay: 1000, // Set in ms if needed
-        open: false // Don't automatically open browser
+        open: true // Set false if you don't want your browser to automatically open
     });
 });
 
