@@ -6,6 +6,7 @@ This is a template to start your own [Foundation](http://foundation.zurb.com) pr
   * [BrowserSync](http://browsersync.io/) for livereload and synchronized testing
   * [CSSO](http://bem.info/tools/optimizers/csso/) and [UglifyJS2](http://lisperator.net/uglifyjs/) for minification
   * [Gulp](http://gulpjs.com) to do all the things
+  * [InstantClick](http://instantclick.io/) to instantly load pages
   * [JSHint](http://www.jshint.com/) for JS linting
 
 ## Requirements

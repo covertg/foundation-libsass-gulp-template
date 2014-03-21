@@ -11,6 +11,7 @@ var pathsIn = {
     jsFoundation: foundation + 'js/**/*.js', // js/vendor/ contains updated jquery, fastclick, modernizr, etc...
     jsModernizr: foundation + 'js/vendor/modernizr.js',
     jsJquery: foundation + 'js/vendor/jquery.js',
+    jsInstantClick: 'bower_components/instantclick/instantclick.js',
 
     sass: src + 'scss/**/*.scss',
     sassFoundation: foundation + 'scss/' // Don't glob because node-sass' includePaths won't understand it
@@ -54,12 +55,12 @@ gulp.task('sass', function() {
 
 // Concatenate & minify JS
 gulp.task('js', function() {
-    gulp.src([pathsIn.jsFoundation, pathsIn.js, '!' + pathsIn.jsModernizr, '!' + pathsIn.jsJquery]) // Modernizr and jquery load separately, Foundation loads before app.js
+    gulp.src([pathsIn.jsFoundation, pathsIn.js, '!' + pathsIn.jsModernizr, '!' + pathsIn.jsJquery, '!' + pathsIn.jsInstantClick]) // Note that Foundation loads before app.js
         .pipe(π.concat('app.js'))
         .pipe(production ? π.uglify() : util.noop()) // Minify with uglifyjs2
         .pipe(gulp.dest(pathsOut.js));
 
-    gulp.src([pathsIn.jsModernizr, pathsIn.jsJquery]) // Copy modernizr & jquery
+    gulp.src([pathsIn.jsModernizr, pathsIn.jsJquery, pathsIn.jsInstantClick]) // Copy our separate js includes
         .pipe(π.cached('js-cache'))
         .pipe(production ? π.uglify() : util.noop())
         .pipe(gulp.dest(pathsOut.js));
@@ -84,7 +85,7 @@ gulp.task('browser-sync', function() {
             baseDir: dest
         },
         //reloadDelay: 1000, // Set in ms if needed
-        open: true // Set false if you don't want your browser to automatically open
+        open: false // Don't automatically open browser
     });
 });
 
@@ -96,7 +97,7 @@ gulp.task('build', ['lint', 'js', 'sass', 'html']);
 gulp.task('default', ['browser-sync', 'build'], function() {
     gulp.watch([pathsIn.sass, pathsIn.sassFoundation + '**/*.scss'], ['sass']);
 
-    gulp.watch([pathsIn.js, pathsIn.jsFoundation], ['lint', 'js']);
+    gulp.watch([pathsIn.js, pathsIn.jsFoundation, pathsIn.jsInstantClick], ['lint', 'js']);
 
     gulp.watch([pathsIn.html], ['html']);
 });
