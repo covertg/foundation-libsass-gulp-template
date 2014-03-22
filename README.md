@@ -1,8 +1,9 @@
-# Foundation libsass template
+# Foundation Sass template
 
 This is a template to start your own [Foundation](http://foundation.zurb.com) project that uses:
 
-  * [Autoprefixer](https://github.com/ai/autoprefixer) for automatic vendor prefixes
+  * [Autoprefixer](http://github.com/ai/autoprefixer) for automatic vendor prefixes
+  # [Bourbon](http://bourbon.io) for convenient mixins
   * [BrowserSync](http://browsersync.io/) for livereload and synchronized testing
   * [CSSO](http://bem.info/tools/optimizers/csso/) and [UglifyJS2](http://lisperator.net/uglifyjs/) for minification
   * [Gulp](http://gulpjs.com) to do all the things
@@ -14,8 +15,10 @@ This is a template to start your own [Foundation](http://foundation.zurb.com) pr
 You'll need to have the following items installed before continuing.
 
   * [Node.js](http://nodejs.org): Use the installer provided on the NodeJS website.
-  * [Gulp](http://gulpjs.com): Run `[sudo] npm install -g gulp`
   * [Bower](http://bower.io): Run `[sudo] npm install -g bower`
+  * [Gulp CLI](http://gulpjs.com): Run `[sudo] npm install -g gulp`
+  * [Ruby 1.9+](http://www.ruby-lang.org): Follow the directions on the community website.
+  * [Bourbon](http://bourbon.io): Run `[sudo] gem install bourbon`
 
 ## Quickstart
 

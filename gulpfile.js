@@ -14,7 +14,8 @@ var pathsIn = {
     jsInstantClick: 'bower_components/instantclick/instantclick.js',
 
     sass: src + 'scss/**/*.scss',
-    sassFoundation: foundation + 'scss/' // Don't glob because sass loadPath won't understand it
+    sassFoundation: foundation + 'scss/', // Don't glob because sass loadPath won't understand it
+    sassBourbon: 'bourbon/' // Same thing ^^
 };
 
 // Paths we write to
@@ -45,7 +46,7 @@ gulp.task('html', function() {
 gulp.task('sass', function() {
     gulp.src(pathsIn.sass)
         .pipe(π.rubySass({
-            loadPath: [pathsIn.sassFoundation],
+            loadPath: [pathsIn.sassFoundation, pathsIn.sassBourbon],
             style: 'nested',
             quiet: true // Foundation doesn't use !global and causes compile fail
         }))
@@ -96,7 +97,7 @@ gulp.task('build', ['lint', 'js', 'sass', 'html']);
 
 // Default (watch) task
 gulp.task('default', ['browser-sync', 'build'], function() {
-    gulp.watch([pathsIn.sass, pathsIn.sassFoundation + '**/*.scss'], ['sass']);
+    gulp.watch([pathsIn.sass, pathsIn.sassFoundation + '**/*.scss', pathsIn.sassBourbon + '**/*.scss'], ['sass']);
 
     gulp.watch([pathsIn.js, pathsIn.jsFoundation, pathsIn.jsInstantClick], ['lint', 'js']);
 
