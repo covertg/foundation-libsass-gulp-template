@@ -1,5 +1,6 @@
 *.DS_Store
-/css/*
-/bower_components/*
-/node_modules/*
 /build/*
+/bower_components/*
+/css/*
+/node_modules/*
+/.sass-cache/*

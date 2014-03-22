@@ -14,7 +14,7 @@ var pathsIn = {
     jsInstantClick: 'bower_components/instantclick/instantclick.js',
 
     sass: src + 'scss/**/*.scss',
-    sassFoundation: foundation + 'scss/' // Don't glob because node-sass' includePaths won't understand it
+    sassFoundation: foundation + 'scss/' // Don't glob because sass loadPath won't understand it
 };
 
 // Paths we write to
@@ -44,9 +44,10 @@ gulp.task('html', function() {
 // Compile & minify sass
 gulp.task('sass', function() {
     gulp.src(pathsIn.sass)
-        .pipe(π.sass({
-            includePaths: [pathsIn.sassFoundation],
-            outputStyle: 'nested'
+        .pipe(π.rubySass({
+            loadPath: [pathsIn.sassFoundation],
+            style: 'nested',
+            quiet: true // Foundation doesn't use !global and causes compile fail
         }))
         .pipe(production ? π.autoprefixer('last 2 versions').pipe(π.csso()) : util.noop()) // Minify, optimize and prefix if production
         .pipe(gulp.dest(pathsOut.css));
