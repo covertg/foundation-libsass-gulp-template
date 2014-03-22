@@ -3,7 +3,7 @@
 This is a template to start your own [Foundation](http://foundation.zurb.com) project that uses:
 
   * [Autoprefixer](http://github.com/ai/autoprefixer) for automatic vendor prefixes
-  # [Bourbon](http://bourbon.io) for convenient mixins
+  * [Bourbon](http://bourbon.io) for convenient mixins
   * [BrowserSync](http://browsersync.io/) for livereload and synchronized testing
   * [CSSO](http://bem.info/tools/optimizers/csso/) and [UglifyJS2](http://lisperator.net/uglifyjs/) for minification
   * [Gulp](http://gulpjs.com) to do all the things
