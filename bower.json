@@ -1,6 +1,7 @@
 {
   "name": "foundation-libsass-template",
   "dependencies": {
+  	"bourbon": "thoughtbot/bourbon",
     "foundation": "zurb/bower-foundation",
     "instantclick": "dieulot/instantclick"
   }

@@ -1,5 +1,4 @@
 *.DS_Store
-/bourbon/*
 /bower_components/*
 /build/*
 /css/*

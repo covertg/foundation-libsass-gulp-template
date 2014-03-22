@@ -1,7 +1,8 @@
 // Define paths & other variables
 var src = 'src/';
 var dest = 'build/';
-var foundation = 'bower_components/foundation/';
+var bower = 'bower_components/';
+var foundation = bower + 'foundation/';
 
 // Paths we read from
 var pathsIn = {
@@ -11,11 +12,11 @@ var pathsIn = {
     jsFoundation: foundation + 'js/**/*.js', // js/vendor/ contains updated jquery, fastclick, modernizr, etc...
     jsModernizr: foundation + 'js/vendor/modernizr.js',
     jsJquery: foundation + 'js/vendor/jquery.js',
-    jsInstantClick: 'bower_components/instantclick/instantclick.js',
+    jsInstantClick: bower + 'instantclick/instantclick.js',
 
     sass: src + 'scss/**/*.scss',
     sassFoundation: foundation + 'scss/', // Don't glob because sass loadPath won't understand it
-    sassBourbon: 'bourbon/' // Same thing ^^
+    sassBourbon: bower + 'bourbon/app/assets/stylesheets' // Same thing ^^
 };
 
 // Paths we write to

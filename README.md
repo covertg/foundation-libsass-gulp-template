@@ -18,7 +18,6 @@ You'll need to have the following items installed before continuing.
   * [Bower](http://bower.io): Run `[sudo] npm install -g bower`
   * [Gulp CLI](http://gulpjs.com): Run `[sudo] npm install -g gulp`
   * [Ruby 1.9+](http://www.ruby-lang.org): Follow the directions on the community website.
-  * [Bourbon](http://bourbon.io): Run `[sudo] gem install bourbon`
 
 ## Quickstart
 
@@ -41,7 +40,7 @@ And you're set! Gulp will build, watch for changes, and serve your files on loca
   * `src/`: All your sources go here
   * `build/`: All built files go here
   * `bower_components/foundation/scss/foundation/_settings.scss`: Foundation-specific settings go here
-  * `Gulpfile.js`: Check this out for a sense of what's going on
+  * `Gulpfile.js`: Read through this for a sense of what's going on
 
 ## Other Notes
   
