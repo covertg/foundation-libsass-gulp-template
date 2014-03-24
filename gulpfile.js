@@ -47,7 +47,7 @@ var stylish = require('jshint-stylish'); // Nice-looking console output when lin
 var production = util.env.type === 'dist'; // Set production mode
 
 // Keeping the error handling DRY
-function doTask(streams, wait) {
+function doTask(streams) {
     streams.on('error', function(err) {
         console.warn(err.message);
     });
