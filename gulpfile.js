@@ -1,4 +1,8 @@
-// Define paths & other variables
+//
+// PATHS, VARIABLES, FUNCTIONS...
+//
+
+// Paths
 var src = 'src/';
 var dest = 'build/';
 var bower = 'bower_components/';
@@ -18,6 +22,8 @@ var pathsIn = {
     sassFoundation: foundation + 'scss/', // Don't glob because sass loadPath won't understand it
     sassBourbon: bower + 'bourbon/app/assets/stylesheets' // Same thing ^^
 };
+pathsIn.jsInc = [pathsIn.jsModernizr, pathsIn.jsJquery]; // All JS includes
+pathsIn.noJsInc = ['!' + pathsIn.jsModernizr, '!' + pathsIn.jsJquery]; // Use array.forEach() if you have many separate includes
 
 // Paths we write to
 var pathsOut = {
@@ -26,63 +32,101 @@ var pathsOut = {
     css: dest + 'css/',
 };
 
+// Gulp plugins
 var gulp = require('gulp');
 var util = require('gulp-util');
-var stylish = require('jshint-stylish'); // Nice-looking console output when linting
-var browserSync = require('browser-sync');
 var π = require('gulp-load-plugins')({ camelize: true } ); // Load everything that matches 'gulp-*' from package.json (all the good names were taken)
 
+// Other Nodejs packages
+var browserSync = require('browser-sync'); // Livereload, etc
+var combine = require('stream-combiner'); // Error handling
+var es = require('event-stream');
+var stylish = require('jshint-stylish'); // Nice-looking console output when linting
+
+// Vars n funcs
 var production = util.env.type === 'dist'; // Set production mode
 
+// Keeping the error handling DRY
+function doTask(streams, wait) {
+    streams.on('error', function(err) {
+        console.warn(err.message);
+    });
+    return streams; // Return a stream and now we're in sync
+}
+
+//
+// TASKS
+//
 
 // Copy html/etc
 gulp.task('html', function() {
-    gulp.src(pathsIn.html)
-        .pipe(π.cached('html-cache')) // Only returns changed files. We can't do this with js concat or sass because they map lots of files into one
-        .pipe(gulp.dest(pathsOut.html));
+    return doTask(combine(
+        gulp.src(pathsIn.html),
+        π.newer(pathsOut.html), // Only returns changed files
+        gulp.dest(pathsOut.html)
+    ));
 });
-
 
 // Compile & minify sass
 gulp.task('sass', function() {
-    gulp.src(pathsIn.sass)
-        .pipe(π.rubySass({
+    return doTask(combine(
+        gulp.src(pathsIn.sass),
+        π.rubySass({
             loadPath: [pathsIn.sassFoundation, pathsIn.sassBourbon],
             style: 'nested',
-            quiet: true // Foundation doesn't use !global and causes compile fail
-        }))
-        .pipe(production ? π.autoprefixer('last 2 versions').pipe(π.csso()) : util.noop()) // Minify, optimize and prefix if production
-        .pipe(gulp.dest(pathsOut.css));
+            quiet: true // Deprecation warnings on Foundation will cause compile to fail
+        }),
+        production ? π.autoprefixer('last 2 versions').pipe(π.csso()) : util.noop(), // Prefix, minify and optimize if production
+        gulp.dest(pathsOut.css)
+    ));
 });
-
 
 // Concatenate & minify JS
-gulp.task('js', function() {
-    gulp.src([pathsIn.jsFoundation, pathsIn.js, '!' + pathsIn.jsModernizr, '!' + pathsIn.jsJquery, '!' + pathsIn.jsInstantClick]) // Note that Foundation loads before app.js
-        .pipe(π.concat('app.js'))
-        .pipe(production ? π.uglify() : util.noop()) // Minify with uglifyjs2
-        .pipe(gulp.dest(pathsOut.js));
+gulp.task('js', function(cb) {
+    var oneDone = false; // True when one stream has finished writing
 
-    gulp.src([pathsIn.jsModernizr, pathsIn.jsJquery, pathsIn.jsInstantClick]) // Copy our separate js includes
-        .pipe(π.cached('js-cache'))
-        .pipe(production ? π.uglify() : util.noop())
-        .pipe(gulp.dest(pathsOut.js));
+    var main = doTask(combine(
+        gulp.src([pathsIn.jsFoundation, pathsIn.js, pathsIn.jsInstantClick].concat(pathsIn.noJsInc)), // Concat Foundation before app.js, ignore separate includes
+        π.newer(pathsOut.js + 'app.js'), // If dest is a single file, gulp-newer uses many:1 mapping
+        π.concat('app.js'),
+        production ? π.uglify() : util.noop(), // Minify with uglifyjs2
+        gulp.dest(pathsOut.js),
+        es.wait(function() { oneDone ? cb() : oneDone = true }) // If the other stream is finished, callback. Otherwise set oneDone = true
+    ));
+
+    var includes = doTask(combine(
+        gulp.src(pathsIn.jsInc),
+        π.newer(pathsOut.js),
+        production ? π.uglify() : util.noop(),
+        gulp.dest(pathsOut.js),
+        es.wait(function() { oneDone ? cb() : oneDone = true })
+    ));
+
 });
-
 
 // Lint JS with jshint
 gulp.task('lint', function() {
-    gulp.src([pathsIn.js, 'Gulpfile.js'])
-        .pipe(π.cached('lint-cache'))
-        .pipe(π.jshint({
-            'jquery': true,
+    return doTask(combine(
+        gulp.src([pathsIn.js, 'gulpfile,js']),
+        π.jshint({
+            'jquery': true, // This is why we use π instead of $
             'camelcase': true
-        }))
-        .pipe(π.jshint.reporter(stylish));
+        }),
+        π.jshint.reporter(stylish)
+    ));
 });
 
-// Cross-device livereload and actions sync (i.e scrolling, clicking, ...)
-gulp.task('browser-sync', function() {
+// Build task
+gulp.task('build', ['lint', 'js', 'sass', 'html']);
+
+// Default (watch) task
+gulp.task('default', ['build'], function() {
+    gulp.watch([pathsIn.sass, pathsIn.sassFoundation + '**/*.scss', pathsIn.sassBourbon + '**/*.scss'], ['sass']);
+
+    gulp.watch([pathsIn.js, pathsIn.jsFoundation, pathsIn.jsInstantClick, 'gulpfile.js'].concat(pathsIn.jsInc), ['lint', 'js']);
+
+    gulp.watch([pathsIn.html], ['html']);
+
     browserSync.init(dest + '**/*', {
         server: {
             baseDir: dest
@@ -90,17 +134,4 @@ gulp.task('browser-sync', function() {
         //reloadDelay: 1000, // Set in ms if needed
         open: false // Don't automatically open browser
     });
-});
-
-
-// Build task
-gulp.task('build', ['lint', 'js', 'sass', 'html']);
-
-// Default (watch) task
-gulp.task('default', ['browser-sync', 'build'], function() {
-    gulp.watch([pathsIn.sass, pathsIn.sassFoundation + '**/*.scss', pathsIn.sassBourbon + '**/*.scss'], ['sass']);
-
-    gulp.watch([pathsIn.js, pathsIn.jsFoundation, pathsIn.jsInstantClick], ['lint', 'js']);
-
-    gulp.watch([pathsIn.html], ['html']);
 });
